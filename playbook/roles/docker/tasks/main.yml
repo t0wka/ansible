@@ -1,0 +1,57 @@
+---
+# tasks file for docker
+- name: docker-ubuntu
+  block:
+    - name: Update APT package cache
+      apt:
+        update_cache: yes
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Install Docker dependencies
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg-agent
+          - software-properties-common
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Add Docker repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+
+    - name: Install Docker on Ubuntu
+      apt:
+        name: docker-ce
+        state: present
+      when: ansible_distribution == 'Ubuntu'
+      notify: Start Docker service
+
+- name: docker-centos
+  block:
+    - name: Add Docker repository
+      yum_repository:
+        name: docker-ce
+        description: Docker CE Stable - $basearch
+        baseurl: https://download.docker.com/linux/centos/7/$basearch/stable
+        gpgcheck: yes
+        gpgkey: https://download.docker.com/linux/centos/gpg
+        enabled: yes
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+
+    - name: Install Docker on CentOS
+      yum:
+        name: docker-ce
+        state: present
+      when: ansible_distribution == "CentOS" and ansible_distribution_major_version == "7"
+      notify: Start Docker service
+

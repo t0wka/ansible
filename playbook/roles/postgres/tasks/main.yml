@@ -1,0 +1,46 @@
+---
+# tasks file for postgres
+- name: Install PostgreSQL Server
+  block:
+    - name: Install PostgreSQL dependencies
+      package:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - software-properties-common
+        state: present
+
+    - name: Import PostgreSQL GPG key
+      apt_key:
+        url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+    - name: Add PostgreSQL APT repository
+      apt_repository:
+        repo: "deb http://apt.postgresql.org/pub/repos/apt/ {{ ansible_distribution_release }}-pgdg main"
+        state: present
+
+    - name: Install PostgreSQL Server
+      apt:
+        name: postgresql-{{ postgresql_version }}
+        state: present
+
+    - name: Stop PostgreSQL service
+      service:
+        name: postgresql
+        state: stopped
+
+    - name: Set custom data directory
+      command: "rsync -av /var/lib/postgresql/{{ postgresql_version }}/main/ {{ postgresql_data_directory }}"
+      when: postgresql_data_directory is defined
+
+    - name: Create custom data directory if not exists
+      file:
+        path: "{{ postgresql_data_directory }}"
+        state: directory
+      when: postgresql_data_directory is defined and (postgresql_data_directory != '/var/lib/postgresql/{{ postgresql_version }}/main/')
+      
+  notify: 
+  - Restart PostgreSQL service
+

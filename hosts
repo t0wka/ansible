@@ -1,0 +1,10 @@
+[app]
+vm2
+vm3
+
+[db]
+vm1 postgresql_version=15 postgresql_data_directory=/test
+
+
+[web]
+vm1
