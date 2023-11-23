@@ -6,4 +6,5 @@ ansible defaults is defined in ansible.cfg
 #RUNNING PLAYBOOK:
 
 cd ~/ansible
+  
 ansible-playbook -i hosts playbook/main.yml
